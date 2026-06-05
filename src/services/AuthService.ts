@@ -27,7 +27,9 @@ export const logoutUser = async () => {
 
 //get current login user
 export const getCurrentUser = async (emailId: string | undefined) => {
-  const response = await apiClient.get<User>(`/users/email/${emailId}`);
+  const response = await apiClient.get<User>(
+    `/users/lookup/search/email/${emailId}`,
+  );
   return response.data;
 };
 
