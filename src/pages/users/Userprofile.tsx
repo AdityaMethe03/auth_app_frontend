@@ -140,15 +140,15 @@ function Userprofile() {
               Edit Profile
             </Button>
           ) : (
-            <div className="flex gap-3 mt-4">
+            <div className="flex w-full gap-3 mt-4">
               <Button
-                className="rounded-2xl w-full"
+                className="flex-1 rounded-2xl"
                 onClick={() => setIsEditing(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="rounded-2xl w-full"
+                className="flex-1 rounded-2xl"
                 onClick={() => {
                   /* save handler */
                 }}
