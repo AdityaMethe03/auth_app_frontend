@@ -6,10 +6,37 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
 import useAuth from "@/auth/store";
 import { useState } from "react";
+import { updateUserProfile } from "@/services/AuthService";
+import toast from "react-hot-toast";
 
 function Userprofile() {
   const [isEditing, setIsEditing] = useState(false);
   const user = useAuth((state) => state.user);
+  const changeLocalLoginData = useAuth((state) => state.changeLocalLoginData);
+  const accessToken = useAuth((state) => state.accessToken);
+
+  const [name, setName] = useState(user?.name || "");
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    if (!user?.id) return;
+    try {
+      setLoading(true);
+      const updatedUser = await updateUserProfile(
+        user.id,
+        name,
+        `test/img/url/${user.id}.png`,
+      );
+      changeLocalLoginData(accessToken!, updatedUser, true);
+      toast.success("Profile updated successfully");
+      setIsEditing(false);
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   console.log(user);
   // val isEnabled
@@ -41,7 +68,7 @@ function Userprofile() {
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <Button variant="outline" className="rounded-xl px-5">
-              Change Picture
+              Change Pictures
             </Button>
           </div>
 
@@ -94,8 +121,10 @@ function Userprofile() {
                 <Label htmlFor="name">Full Name</Label>
                 <Input
                   id="name"
-                  value={user?.name}
-                  onChange={() => {}}
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                  }}
                   className="rounded-xl"
                 />
               </div>
@@ -143,15 +172,17 @@ function Userprofile() {
             <div className="flex w-full gap-3 mt-4">
               <Button
                 className="flex-1 rounded-2xl"
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  setName(user?.name || "");
+                  setIsEditing(false);
+                }}
               >
                 Cancel
               </Button>
               <Button
+                disabled={loading}
                 className="flex-1 rounded-2xl"
-                onClick={() => {
-                  /* save handler */
-                }}
+                onClick={handleSave}
               >
                 Save
               </Button>

@@ -41,3 +41,15 @@ export const refreshToken = async () => {
 };
 
 //apis
+
+export const updateUserProfile = async (
+  userId: string,
+  name: string,
+  image: string,
+) => {
+  const response = await apiClient.put<User>(
+    `/users/update/profile/${userId}`,
+    { name, image },
+  );
+  return response.data;
+};

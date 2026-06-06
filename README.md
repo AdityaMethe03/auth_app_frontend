@@ -77,7 +77,6 @@ TODO:
 imp:
 oauth signup and login urls
 
-update button desing on profile page.
 status and role field added in User - update register user logic
 
 for sudo admin

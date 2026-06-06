@@ -16,10 +16,11 @@ function Signup() {
     name: "",
     email: "",
     password: "",
+    status: "ACTIVE",
   });
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState<boolean>(false);
+  // const [error, setError] = useState(null);
 
   const navigate = useNavigate();
 
@@ -64,6 +65,7 @@ function Signup() {
         name: "",
         email: "",
         password: "",
+        status: "ACTIVE",
       });
       //navigate : login
       navigate("/login");
