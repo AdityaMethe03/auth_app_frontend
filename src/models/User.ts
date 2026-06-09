@@ -7,4 +7,5 @@ export default interface User {
   updatedAt?: string;
   createdAt?: string;
   provider: string;
+  roles: string[];
 }

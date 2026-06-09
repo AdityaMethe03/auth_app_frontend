@@ -9,6 +9,7 @@ import { useState } from "react";
 import { updateUserProfile } from "@/services/AuthService";
 import toast from "react-hot-toast";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog.tsx";
+import DeleteAccountDialog from "@/components/DeleteAccountDialog.tsx";
 
 function Userprofile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -20,6 +21,12 @@ function Userprofile() {
   const [loading, setLoading] = useState(false);
 
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const isAdmin = () => {
+    if (!user?.roles) return false;
+    return user.roles.includes("ADMIN") || user.roles.includes("SUDO_ADMIN");
+  }
 
   const handleSave = async () => {
     if (!user?.id) return;
@@ -207,12 +214,15 @@ function Userprofile() {
           >
             Change Password
           </Button>
-          <Button
-            variant="destructive"
-            className="w-full rounded-xl py-3 text-base"
-          >
-            Delete Account
-          </Button>
+          {isAdmin() && (
+              <Button
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  variant="destructive"
+                  className="w-full rounded-xl py-3 text-base"
+              >
+                Delete Account
+              </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -220,6 +230,13 @@ function Userprofile() {
           open={isPasswordDialogOpen}
           onOpenChange={setIsPasswordDialogOpen}
           userId={user?.id || ""}
+      />
+
+      <DeleteAccountDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          userId={user?.id || ""}
+          userEmail={user?.email || ""}
       />
     </div>
   );

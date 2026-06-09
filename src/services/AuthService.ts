@@ -65,3 +65,9 @@ export const updateUserPassword = async (
 
   return response.data;
 }
+
+export const deleteUserAccount = async (userId: string) => {
+  const response = await apiClient.delete<User>(`/users/delete/${userId}`);
+
+  return response.data;
+}
