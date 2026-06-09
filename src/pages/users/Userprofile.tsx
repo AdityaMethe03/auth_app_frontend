@@ -8,6 +8,7 @@ import useAuth from "@/auth/store";
 import { useState } from "react";
 import { updateUserProfile } from "@/services/AuthService";
 import toast from "react-hot-toast";
+import ChangePasswordDialog from "@/components/ChangePasswordDialog.tsx";
 
 function Userprofile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -17,6 +18,8 @@ function Userprofile() {
 
   const [name, setName] = useState(user?.name || "");
   const [loading, setLoading] = useState(false);
+
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   const handleSave = async () => {
     if (!user?.id) return;
@@ -198,6 +201,7 @@ function Userprofile() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
+            onClick={() => setIsPasswordDialogOpen(true)}
             variant="outline"
             className="w-full rounded-xl py-3 text-base"
           >
@@ -211,6 +215,12 @@ function Userprofile() {
           </Button>
         </CardContent>
       </Card>
+
+      <ChangePasswordDialog
+          open={isPasswordDialogOpen}
+          onOpenChange={setIsPasswordDialogOpen}
+          userId={user?.id || ""}
+      />
     </div>
   );
 }

@@ -5,13 +5,12 @@ import type LoginResponseData from "@/models/LoginResponseData";
 import type User from "@/models/User";
 //register function
 export const registerUser = async (signupData: RegisterData) => {
-  // api  call to server to save data
+  // api call to server to save data
   const response = await apiClient.post(`/auth/register`, signupData);
   return response.data;
 };
 
 //login
-
 export const loginUser = async (loginData: LoginData) => {
   const response = await apiClient.post<LoginResponseData>(
     "/auth/login",
@@ -53,3 +52,16 @@ export const updateUserProfile = async (
   );
   return response.data;
 };
+
+export const updateUserPassword = async (
+  userId: string,
+  oldPassword: string,
+  newPassword: string,
+) => {
+  const response = await apiClient.put<User>(
+    `/users/update/password/${userId}`,
+    { oldPassword, newPassword },
+  );
+
+  return response.data;
+}

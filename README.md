@@ -77,7 +77,5 @@ TODO:
 imp:
 oauth signup and login urls
 
-status and role field added in User - update register user logic
-
 for sudo admin
 create, update, lookup, delete role
