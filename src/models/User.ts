@@ -1,3 +1,5 @@
+import type { Permission } from "@/models/Permission";
+
 export default interface User {
   id: string;
   email: string;
@@ -8,4 +10,5 @@ export default interface User {
   createdAt?: string;
   provider: string;
   roles: string[];
+  permissions?: Permission[];
 }

@@ -17,7 +17,7 @@ type AuthState = {
   authLoading: boolean;
   login: (loginData: LoginData) => Promise<LoginResponseData>;
   logout: (silent?: boolean) => void;
-  checkLogin: () => boolean | undefined;
+  checkLogin: () => boolean;
 
   changeLocalLoginData: (
     accessToken: string,
@@ -63,35 +63,25 @@ const useAuth = create<AuthState>()(
           });
         }
       },
-      logout: async (silent = false) => {
+      logout: async () => {
         try {
-          //   if (!silent) {
-          //     await logoutUser();
-          //   }
           set({
             authLoading: true,
           });
           await logoutUser();
         } catch (error) {
-          console.log(error);
-          throw error;
+          // Clear the local session even when the server cannot revoke the cookie.
+          console.error("Server logout failed; clearing local auth state", error);
         } finally {
           set({
+            accessToken: null,
+            user: null,
             authLoading: false,
+            authStatus: false,
           });
         }
-        // await logoutUser();
-        set({
-          accessToken: null,
-          user: null,
-          authLoading: false,
-          authStatus: false,
-        });
       },
-      checkLogin: () => {
-        if (get().accessToken && get().authStatus) return true;
-        else false;
-      },
+      checkLogin: () => Boolean(get().accessToken && get().authStatus),
     }),
 
     { name: LOCAL_KEY },

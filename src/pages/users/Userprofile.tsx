@@ -23,10 +23,8 @@ function Userprofile() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const isAdmin = () => {
-    if (!user?.roles) return false;
-    return user.roles.includes("ADMIN") || user.roles.includes("SUDO_ADMIN");
-  }
+  // The backend permits users to delete their own account by user ID.
+  const canDeleteAccount = Boolean(user?.id);
 
   const handleSave = async () => {
     if (!user?.id) return;
@@ -37,11 +35,16 @@ function Userprofile() {
         name,
         `test/img/url/${user.id}.png`,
       );
-      changeLocalLoginData(accessToken!, updatedUser, true);
+      changeLocalLoginData(
+        accessToken!,
+        { ...user, ...updatedUser, permissions: user?.permissions },
+        true,
+      );
       toast.success("Profile updated successfully");
       setIsEditing(false);
     } catch (error) {
       console.log(error);
+      if ([401, 403, 404].includes((error as any)?.response?.status)) return;
       toast.error("Failed to update profile");
     } finally {
       setLoading(false);
@@ -214,7 +217,7 @@ function Userprofile() {
           >
             Change Password
           </Button>
-          {isAdmin() && (
+          {canDeleteAccount && (
               <Button
                   onClick={() => setIsDeleteDialogOpen(true)}
                   variant="destructive"

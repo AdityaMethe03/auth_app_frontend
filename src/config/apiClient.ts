@@ -24,7 +24,15 @@ apiClient.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
+let sessionLogoutStarted = false;
 let pending: any[] = [];
+
+function endSession() {
+  if (sessionLogoutStarted) return;
+  sessionLogoutStarted = true;
+  toast.error("Your session has ended. Please sign in again.");
+  void useAuth.getState().logout();
+}
 
 function queueRequest(cb: any) {
   pending.push(cb);
@@ -37,20 +45,50 @@ function resolveQueue(newToken: string) {
 
 // response interceptors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (
+      response.config.url?.includes("/auth/login") ||
+      response.config.url?.includes("/auth/refresh")
+    ) {
+      sessionLogoutStarted = false;
+    }
+    return response;
+  },
   async (error) => {
-    const is401 = error.response.status === 401;
+    const status = error.response?.status;
+    const is401 = status === 401;
     const original = error.config;
-    console.log(original);
-    console.log("original retry: ", original._retry);
-    if (!is401 || original._retry) {
-      //message:
+    const requestUrl = original?.url ?? "";
+    const isAuthRequest = requestUrl.includes("/auth/");
+    const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(
+      original?.method?.toUpperCase() ?? "",
+    );
 
-      if (error.response && error.response.data)
+    if (isAuthRequest) {
+      return Promise.reject(error);
+    }
+
+    if (status === 403) {
+      toast.error("This action could not be completed.");
+      return Promise.reject(error);
+    }
+
+    if (status === 404 && isMutation) {
+      endSession();
+      return Promise.reject(error);
+    }
+
+    if (!is401 || !original) {
+      if (error.response?.data) {
         toast.error(error.response.data?.message || "An error occurred");
-      console.error("API Error:", error.response.data);
+      }
+      console.error("API Error:", error.response?.data);
       console.error("Full error:", error);
+      return Promise.reject(error);
+    }
 
+    if (original._retry) {
+      endSession();
       return Promise.reject(error);
     }
 
@@ -88,7 +126,7 @@ apiClient.interceptors.response.use(
       return apiClient(original);
     } catch (error) {
       resolveQueue("null");
-      useAuth.getState().logout();
+      endSession();
       return Promise.reject(error);
     } finally {
       isRefreshing = false;

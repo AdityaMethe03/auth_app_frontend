@@ -7,7 +7,6 @@ import { Mail, Lock, Github, Chrome, CheckCircle2Icon } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import type LoginData from "@/models/LoginData";
 import toast from "react-hot-toast";
-import { loginUser } from "@/services/AuthService";
 import { useNavigate } from "react-router";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
@@ -20,7 +19,7 @@ function Login() {
   });
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const login = useAuth((state) => state.login);
@@ -51,6 +50,7 @@ function Login() {
 
     try {
       setLoading(true);
+      setError(null);
       // const userInfo = await loginUser(loginData);
 
       //login function : useAuth
@@ -62,14 +62,14 @@ function Login() {
       //save the current user logged in informations
       //localstorage
     } catch (error: any) {
-      console.log(error);
-
-      toast.error("Error !!");
-      if (error?.status == 400) {
-        setError(error);
-      } else {
-        setError(error);
-      }
+      console.error("Login request failed", error);
+      const status = error?.response?.status;
+      const message =
+        status === 400 || status === 401
+          ? "Authentication failed!"
+          : "Unable to sign in. Please try again.";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -110,9 +110,7 @@ function Login() {
                 <Alert variant={"destructive"}>
                   <CheckCircle2Icon />
                   <AlertTitle>
-                    {error?.response
-                      ? error?.response?.data?.message
-                      : error?.message}
+                    {error}
                   </AlertTitle>
                 </Alert>
               </div>

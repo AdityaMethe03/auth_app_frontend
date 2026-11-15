@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 import { BarChart3, User, ShieldCheck, Activity } from "lucide-react";
 import { getCurrentUser } from "@/services/AuthService";
 import useAuth from "@/auth/store";
+import { hasPermission } from "@/auth/permissions";
 import { useState } from "react";
 import type UserT from "@/models/User";
 import toast from "react-hot-toast";
 
 function Userhome() {
   const user = useAuth((state) => state.user);
+  const canReadUsers = hasPermission(user, "USER:READ");
   const [user1, setUser1] = useState<UserT | null>(null);
 
   const getUserData = async () => {
@@ -20,6 +22,7 @@ function Userhome() {
       toast.success("you are able to access secured apis")
     } catch (error) {
       console.log(error);
+      if ([401, 403, 404].includes((error as any)?.response?.status)) return;
       toast.error("error in getting data");
     }
   };
@@ -96,13 +99,14 @@ function Userhome() {
       </motion.div>
 
       {/* Dummy CTA */}
-      <div className="text-center">
-        <Button onClick={getUserData} className="rounded-2xl px-8 text-lg">
-          Get current user
-        </Button>
-
-        <p>{user1?.name}</p>
-      </div>
+      {canReadUsers && (
+        <div className="text-center">
+          <Button onClick={getUserData} className="rounded-2xl px-8 text-lg">
+            Get current user
+          </Button>
+          <p>{user1?.name}</p>
+        </div>
+      )}
     </div>
   );
 }

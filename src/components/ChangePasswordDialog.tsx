@@ -14,11 +14,7 @@ interface ChangePasswordDialogProps {
     userId: string;
 }
 
-export default function ChangePasswordDialog({
-                                                 open,
-                                                 onOpenChange,
-                                                 userId,
-                                             }: ChangePasswordDialogProps) {
+export default function ChangePasswordDialog({ open, onOpenChange, userId,}: ChangePasswordDialogProps) {
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -65,6 +61,7 @@ export default function ChangePasswordDialog({
             onOpenChange(false);
         } catch (error: any) {
             console.log(error);
+            if ([401, 403, 404].includes(error?.response?.status)) return;
             const errorMsg = error?.response?.data?.message || "Failed to update password";
             toast.error(errorMsg);
         } finally {

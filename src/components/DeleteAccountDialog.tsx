@@ -61,6 +61,7 @@ export default function DeleteAccountDialog({
       navigate("/");
     } catch (error: any) {
       console.log(error);
+      if ([401, 403, 404].includes(error?.response?.status)) return;
       const errorMsg =
         error?.response?.data?.message || "Failed to delete account";
       toast.error(errorMsg);
