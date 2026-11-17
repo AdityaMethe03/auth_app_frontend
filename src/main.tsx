@@ -11,6 +11,9 @@ import Userlayout from "./pages/users/Userlayout.tsx";
 import Userhome from "./pages/users/Userhome.tsx";
 import Userprofile from "./pages/users/Userprofile.tsx";
 import OAuthSuccess from "./pages/OAuthSuccess.tsx";
+import UsersManagement from "./pages/admin/UsersManagement.tsx";
+import RolesManagement from "./pages/admin/RolesManagement.tsx";
+import PermissionRoute from "./components/PermissionRoute.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
@@ -24,7 +27,12 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/dashboard" element={<Userlayout />}>
           <Route index element={<Userhome />} />
           <Route path="profile" element={<Userprofile />} />
-          {/* .... */}
+          <Route element={<PermissionRoute permission="USER:READ" />}>
+            <Route path="admin/users" element={<UsersManagement />} />
+          </Route>
+          <Route element={<PermissionRoute permission="ROLE:READ" />}>
+            <Route path="admin/roles" element={<RolesManagement />} />
+          </Route>
         </Route>
         <Route path="oauth/success" element={<OAuthSuccess />} />
         <Route path="oauth/failure" element={<OAuthSuccess />} />

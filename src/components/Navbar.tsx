@@ -1,10 +1,13 @@
 import { Button } from "./ui/button";
 import { NavLink, useNavigate } from "react-router";
 import useAuth from "@/auth/store";
+import { hasPermission } from "@/auth/permissions";
 
 function Navbar() {
   const checkLogin = useAuth((state) => state.checkLogin);
   const user = useAuth((state) => state.user);
+  const canManageUsers = hasPermission(user, "USER:READ");
+  const canViewRoles = hasPermission(user, "ROLE:READ");
   const logout = useAuth((state) => state.logout);
   const navigate = useNavigate();
 
@@ -28,6 +31,9 @@ function Navbar() {
         {checkLogin() ? (
           <>
             <NavLink to={"/dashboard/profile"}>{user?.name}</NavLink>
+
+            {canManageUsers && <NavLink to="/dashboard/admin/users">Users</NavLink>}
+            {canViewRoles && <NavLink to="/dashboard/admin/roles">Roles</NavLink>}
 
             <Button
               onClick={() => {

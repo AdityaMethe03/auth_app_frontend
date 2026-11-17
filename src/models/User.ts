@@ -10,5 +10,6 @@ export default interface User {
   createdAt?: string;
   provider: string;
   roles: string[];
+  status?: "ACTIVE" | "PENDING" | "REVIEW" | "DELETED" | "INACTIVE";
   permissions?: Permission[];
 }
