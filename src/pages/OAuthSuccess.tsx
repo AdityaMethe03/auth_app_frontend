@@ -1,7 +1,7 @@
 import useAuth from "@/auth/store";
 import { Spinner } from "@/components/ui/spinner";
 import { refreshToken } from "@/services/AuthService";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
@@ -10,6 +10,7 @@ function OAuthSuccess() {
 
   const changeLocalLoginData = useAuth((state) => state.changeLocalLoginData);
   const navigate = useNavigate();
+  const tenantId = new URLSearchParams(window.location.search).get("tenantId") ?? undefined;
 
   useEffect(() => {
     async function getAccessToken() {
@@ -17,20 +18,19 @@ function OAuthSuccess() {
         //refresh token ki api call
         setIsRefreshing(true);
         try {
-          const responseLoginData = await refreshToken();
-          console.log(responseLoginData);
+          const responseLoginData = await refreshToken(tenantId);
           //login:
           changeLocalLoginData(
             responseLoginData.accessToken,
             responseLoginData.user,
-            true
+            true,
           );
 
           toast.success("Login success !");
           navigate("/dashboard");
         } catch (error) {
           toast.error("Error while login!");
-          console.log(error);
+          console.error("Unable to finish tenant OAuth login", error);
         } finally {
           setIsRefreshing(false);
         }

@@ -9,6 +9,7 @@ export type RoleStatus = "ACTIVE" | "PENDING" | "REVIEW" | "DELETED" | "INACTIVE
 
 export default interface Role {
   id: string;
+  tenantId: string;
   identifier: string;
   name: string;
   isSystem: boolean;

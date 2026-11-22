@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { Mail, Lock, Github, Chrome, CheckCircle2Icon } from "lucide-react";
+import { Mail, Lock, CheckCircle2Icon, Eye, EyeOff } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import type LoginData from "@/models/LoginData";
 import toast from "react-hot-toast";
@@ -14,12 +14,14 @@ import useAuth from "@/auth/store";
 import OAuth2Buttons from "@/components/OAuth2Buttons";
 function Login() {
   const [loginData, setLoginData] = useState<LoginData>({
+    tenantId: "",
     email: "",
     password: "",
   });
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const login = useAuth((state) => state.login);
@@ -37,6 +39,10 @@ function Login() {
     //validation:
     if (loginData.email.trim() === "") {
       toast.error("Input required !");
+      return;
+    }
+    if (loginData.tenantId.trim() === "") {
+      toast.error("Tenant code is required.");
       return;
     }
     if (loginData.password.trim() === "") {
@@ -120,6 +126,10 @@ function Login() {
             <form onSubmit={handleFormSubmit} className="mt-8 space-y-6">
               {/* Email */}
               <div className="space-y-2">
+                <Label htmlFor="tenantId">Tenant code</Label>
+                <Input id="tenantId" name="tenantId" value={loginData.tenantId} onChange={handleInputChange} placeholder="your-tenant" required />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -142,13 +152,22 @@ function Login() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     name="password"
                     value={loginData.password}
                     onChange={handleInputChange}
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
                 </div>
               </div>
 
@@ -174,7 +193,7 @@ function Login() {
               </div>
 
               {/* OAuth Buttons */}
-              <OAuth2Buttons />
+              <OAuth2Buttons tenantId={loginData.tenantId} />
             </form>
           </CardContent>
         </Card>

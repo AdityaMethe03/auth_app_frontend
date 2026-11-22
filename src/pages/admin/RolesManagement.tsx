@@ -9,7 +9,7 @@ import useAuth from "@/auth/store";
 import type Role from "@/models/Role";
 import type { RoleStatus } from "@/models/Role";
 import type { Permission, PermissionAction, PermissionEntity } from "@/models/Permission";
-import { createRole, deleteRole, getAllRoles, updateRole } from "@/services/AuthService";
+import { createRole, deleteRole, getAllRoles, getAllTenants, updateRole, type Tenant } from "@/services/AuthService";
 import toast from "react-hot-toast";
 
 const ENTITIES: PermissionEntity[] = ["USER", "ROLE"];
@@ -18,15 +18,19 @@ const STATUSES: RoleStatus[] = ["ACTIVE", "PENDING", "REVIEW", "INACTIVE", "DELE
 
 function RolesManagement() {
   const user = useAuth((state) => state.user);
+  const isPlatformAdmin = user?.tenantId === "SYSTEM" && user.roles?.includes("SUDO_ADMIN");
+  const tenantId = isPlatformAdmin ? "SYSTEM" : user?.tenantId;
   const canCreate = hasPermission(user, "ROLE:WRITE");
   const canUpdate = hasPermission(user, "ROLE:UPDATE");
   const canDelete = hasPermission(user, "ROLE:DELETE");
   const [roles, setRoles] = useState<Role[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [createTenantId, setCreateTenantId] = useState("SYSTEM");
   const [roleIdentifier, setRoleIdentifier] = useState("");
   const [roleName, setRoleName] = useState("");
   const [status, setStatus] = useState<RoleStatus>("ACTIVE");
@@ -34,20 +38,27 @@ function RolesManagement() {
 
   const visibleRoles = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return query ? roles.filter((role) => `${role.name} ${role.identifier}`.toLowerCase().includes(query)) : roles;
+    return query
+      ? roles.filter((role) => `${role.tenantId} ${role.name} ${role.identifier}`.toLowerCase().includes(query))
+      : roles;
   }, [roles, search]);
 
   const loadRoles = useCallback(async () => {
     setLoading(true);
     try {
-      setRoles(await getAllRoles());
+      const [roleRows, tenantRows] = await Promise.all([
+        getAllRoles(tenantId),
+        isPlatformAdmin ? getAllTenants() : Promise.resolve([]),
+      ]);
+      setRoles(roleRows);
+      setTenants(tenantRows);
     } catch (error) {
       console.error("Unable to load roles", error);
       toast.error("Unable to load roles.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isPlatformAdmin, tenantId]);
 
   useEffect(() => {
     void loadRoles();
@@ -55,6 +66,7 @@ function RolesManagement() {
 
   function beginCreate() {
     setEditingRole(null);
+    setCreateTenantId(isPlatformAdmin ? "SYSTEM" : (tenantId ?? ""));
     setRoleIdentifier("");
     setRoleName("");
     setStatus("ACTIVE");
@@ -88,15 +100,15 @@ function RolesManagement() {
         const [entity, action] = value.split(":");
         return { entity: entity as PermissionEntity, action: action as PermissionAction };
       }),
-    } as Omit<Role, "id" | "createdAt" | "updatedAt">;
+    } as Omit<Role, "id" | "tenantId" | "createdAt" | "updatedAt">;
 
     try {
       if (editingRole) {
-        const updated = await updateRole(editingRole.id, payload);
-        setRoles((current) => current.map((role) => role.id === updated.id ? updated : role));
+        const updated = await updateRole(editingRole.id, payload, editingRole.tenantId);
+        setRoles((current) => current.map((role) => role.id === updated.id && role.tenantId === updated.tenantId ? updated : role));
         toast.success("Role updated.");
       } else {
-        const created = await createRole(payload);
+        const created = await createRole(payload, isPlatformAdmin ? createTenantId : tenantId);
         setRoles((current) => [...current, created].sort((a, b) => a.name.localeCompare(b.name)));
         toast.success("Role created.");
       }
@@ -112,8 +124,8 @@ function RolesManagement() {
   async function handleDelete(role: Role) {
     if (!window.confirm(`Delete the ${role.name} role? Users with this role will lose it.`)) return;
     try {
-      await deleteRole(role.id);
-      setRoles((current) => current.filter((item) => item.id !== role.id));
+      await deleteRole(role.id, role.tenantId);
+      setRoles((current) => current.filter((item) => item.id !== role.id || item.tenantId !== role.tenantId));
       toast.success("Role deleted.");
     } catch (error) {
       console.error("Unable to delete role", error);
@@ -127,7 +139,7 @@ function RolesManagement() {
         <div>
           <p className="text-sm text-muted-foreground">Administration</p>
           <h1 className="text-3xl font-bold">Roles & permissions</h1>
-          <p className="mt-1 text-muted-foreground">Define which actions each role can perform.</p>
+          <p className="mt-1 text-muted-foreground">{isPlatformAdmin ? "Manage roles across all tenants." : "Define which actions each role can perform."}</p>
         </div>
         {canCreate && <Button onClick={beginCreate}>Create role</Button>}
       </header>
@@ -135,17 +147,18 @@ function RolesManagement() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Roles</CardTitle>
-          <Input className="max-w-xs" placeholder="Search roles" value={search} onChange={(event) => setSearch(event.target.value)} />
+          <Input className="max-w-xs" placeholder="Search tenant, role, or identifier" value={search} onChange={(event) => setSearch(event.target.value)} />
         </CardHeader>
         <CardContent>
           {loading ? <p className="py-8 text-center text-muted-foreground">Loading roles…</p> : (
             <div className="overflow-x-auto">
-      <table className="w-full min-w-[820px] text-left text-sm">
+              <table className="w-full min-w-[1000px] text-left text-sm">
                 <thead className="border-b text-muted-foreground">
-                  <tr><th className="p-3">Role</th><th className="p-3">Identifier</th><th className="p-3">Type</th><th className="p-3">Status</th><th className="p-3">Permissions</th><th className="p-3 text-right">Actions</th></tr>
+                  <tr>{isPlatformAdmin && <th className="p-3">Tenant code</th>}<th className="p-3">Role</th><th className="p-3">Identifier</th><th className="p-3">Type</th><th className="p-3">Status</th><th className="p-3">Permissions</th><th className="p-3 text-right">Actions</th></tr>
                 </thead>
                 <tbody>
-                  {visibleRoles.map((role) => <tr className="border-b last:border-0" key={role.id}>
+                  {visibleRoles.map((role) => <tr className="border-b last:border-0" key={`${role.tenantId}:${role.id}`}>
+                    {isPlatformAdmin && <td className="p-3 font-mono text-xs">{role.tenantId}</td>}
                     <td className="p-3 font-medium">{role.name}</td>
                     <td className="p-3 font-mono text-xs">{role.identifier}</td>
                     <td className="p-3">{role.isSystem ? "System" : "Custom"}</td>
@@ -156,7 +169,7 @@ function RolesManagement() {
                       {canDelete && !role.isSystem && <Button size="sm" variant="destructive" onClick={() => void handleDelete(role)}>Delete</Button>}
                     </div></td>
                   </tr>)}
-                  {!visibleRoles.length && <tr><td className="p-8 text-center text-muted-foreground" colSpan={6}>No roles found.</td></tr>}
+                  {!visibleRoles.length && <tr><td className="p-8 text-center text-muted-foreground" colSpan={isPlatformAdmin ? 7 : 6}>No roles found.</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -168,7 +181,8 @@ function RolesManagement() {
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingRole ? `Edit ${editingRole.name}` : "Create role"}</DialogTitle></DialogHeader>
           <form className="space-y-5" onSubmit={handleSave}>
-            <div><Label htmlFor="role-identifier">Permanent identifier</Label><Input id="role-identifier" value={roleIdentifier} onChange={(event) => setRoleIdentifier(event.target.value)} placeholder="support_agent" pattern="[A-Za-z][A-Za-z0-9_-]*" required disabled={Boolean(editingRole)} /><p className="text-xs text-muted-foreground">This identifier is permanent and used to link users to this role.</p></div>
+            {!editingRole && isPlatformAdmin && <div className="space-y-2"><Label htmlFor="role-tenant">Tenant</Label><select id="role-tenant" className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={createTenantId} onChange={(event) => setCreateTenantId(event.target.value)}>{tenants.map((tenant) => <option key={tenant.tenantCode} value={tenant.tenantCode}>{tenant.name} ({tenant.tenantCode})</option>)}</select></div>}
+            <div><Label htmlFor="role-identifier">Permanent identifier</Label><Input id="role-identifier" value={roleIdentifier} onChange={(event) => setRoleIdentifier(event.target.value.toUpperCase())} placeholder="SUPPORT_AGENT" pattern="[A-Z][A-Z0-9_]*" required disabled={Boolean(editingRole)} /><p className="text-xs text-muted-foreground">Uppercase only. This identifier is permanent and links users to this role.</p></div>
             <div><Label htmlFor="role-name">Role name</Label><Input id="role-name" value={roleName} onChange={(event) => setRoleName(event.target.value)} placeholder="Support Agent" required disabled={Boolean(editingRole?.isSystem)} /></div>
             <div><Label htmlFor="role-status">Status</Label><select id="role-status" className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm" value={status} onChange={(event) => setStatus(event.target.value as RoleStatus)} disabled={Boolean(editingRole?.isSystem)}>{STATUSES.map((item) => <option key={item} value={item}>{item}</option>)}</select></div>
             <fieldset className="space-y-3">
@@ -178,9 +192,7 @@ function RolesManagement() {
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {ACTIONS.map((action) => {
                     const permission = `${entity}:${action}` as Permission;
-                    return <label key={permission} className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" checked={permissions.includes(permission)} onChange={(event) => togglePermission(permission, event.target.checked)} />{action}
-                    </label>;
+                    return <label key={permission} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={permissions.includes(permission)} onChange={(event) => togglePermission(permission, event.target.checked)} />{action}</label>;
                   })}
                 </div>
               </div>)}

@@ -12,6 +12,7 @@ const LOCAL_KEY = "app_state";
 
 type AuthState = {
   accessToken: string | null;
+  tenantId: string | null;
   user: User | null;
   authStatus: boolean;
   authLoading: boolean;
@@ -31,6 +32,7 @@ const useAuth = create<AuthState>()(
   persist(
     (set, get) => ({
       accessToken: null,
+      tenantId: null,
       user: null,
       authStatus: false,
       authLoading: false,
@@ -38,6 +40,7 @@ const useAuth = create<AuthState>()(
       changeLocalLoginData: (accessToken, user, authStatus) => {
         set({
           accessToken,
+          tenantId: user.tenantId,
           user,
           authStatus,
         });
@@ -50,6 +53,7 @@ const useAuth = create<AuthState>()(
           console.log(loginResponseData);
           set({
             accessToken: loginResponseData.accessToken,
+            tenantId: loginResponseData.user.tenantId,
             user: loginResponseData.user,
             authStatus: true,
           });
@@ -75,6 +79,7 @@ const useAuth = create<AuthState>()(
         } finally {
           set({
             accessToken: null,
+            tenantId: null,
             user: null,
             authLoading: false,
             authStatus: false,

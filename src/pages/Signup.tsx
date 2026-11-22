@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, Github, Chrome } from "lucide-react";
-import React, { useState, type FormEvent } from "react";
+import { Mail, Lock, User } from "lucide-react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import type RegisterData from "@/models/RegisterData";
 import { registerUser } from "@/services/AuthService";
@@ -13,6 +13,7 @@ import OAuth2Buttons from "@/components/OAuth2Buttons";
 
 function Signup() {
   const [data, setData] = useState<RegisterData>({
+    tenantId: "",
     name: "",
     email: "",
     password: "",
@@ -38,11 +39,14 @@ function Signup() {
   // handling form submit
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log(data);
 
     //validations
     if (data.name.trim() === "") {
       toast.error("Name is required !");
+      return;
+    }
+    if (data.tenantId.trim() === "") {
+      toast.error("Tenant code is required.");
       return;
     }
 
@@ -59,9 +63,10 @@ function Signup() {
     //form submit for registrations
     try {
       const result = await registerUser(data);
-      console.log(result);
+      void result;
       toast.success("User register successfully...");
       setData({
+        tenantId: "",
         name: "",
         email: "",
         password: "",
@@ -106,6 +111,10 @@ function Signup() {
 
             {/* Form */}
             <form onSubmit={handleFormSubmit} className="mt-8 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="tenantId">Tenant code</Label>
+                <Input id="tenantId" name="tenantId" value={data.tenantId} onChange={handleInputChange} placeholder="your-tenant" required />
+              </div>
               {/* Name */}
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
@@ -167,7 +176,7 @@ function Signup() {
               </div>
 
               {/* OAuth Buttons */}
-              <OAuth2Buttons />
+              <OAuth2Buttons tenantId={data.tenantId} />
             </form>
           </CardContent>
         </Card>

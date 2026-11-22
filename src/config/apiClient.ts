@@ -19,6 +19,11 @@ apiClient.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+  const tenantId = useAuth.getState().tenantId;
+  const configuredTenant = config.headers["X-G-APP-Tenant-Id"];
+  if (!configuredTenant && tenantId) {
+    config.headers["X-G-APP-Tenant-Id"] = tenantId;
+  }
 
   return config;
 });

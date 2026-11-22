@@ -6,8 +6,10 @@ import type User from "@/models/User";
 import type Role from "@/models/Role";
 //register function
 export const registerUser = async (signupData: RegisterData) => {
-  // api call to server to save data
-  const response = await apiClient.post(`/auth/register`, signupData);
+  const { tenantId, ...input } = signupData;
+  const response = await apiClient.post(`/auth/register`, input, {
+    headers: { "X-G-APP-Tenant-Id": tenantId },
+  });
   return response.data;
 };
 
@@ -15,7 +17,8 @@ export const registerUser = async (signupData: RegisterData) => {
 export const loginUser = async (loginData: LoginData) => {
   const response = await apiClient.post<LoginResponseData>(
     "/auth/login",
-    loginData,
+    { email: loginData.email, password: loginData.password },
+    { headers: { "X-G-APP-Tenant-Id": loginData.tenantId } },
   );
   return response.data;
 };
@@ -33,8 +36,10 @@ export const getCurrentUser = async (emailId: string | undefined) => {
   return response.data;
 };
 
-export const getAllUsers = async () => {
-  const response = await apiClient.get<User[]>("/users/lookup/search/all");
+export const getAllUsers = async (tenantId?: string) => {
+  const response = await apiClient.get<User[]>("/users/lookup/search/all", {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
   return response.data;
 };
 
@@ -43,12 +48,14 @@ export const createManagedUser = async (input: {
   name: string;
   password: string;
   roles: string[];
-}) => {
+}, tenantId?: string) => {
   const response = await apiClient.post<User>("/users/register", {
     ...input,
     enable: true,
     provider: "LOCAL",
     status: "ACTIVE",
+  }, {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
   });
   return response.data;
 };
@@ -56,43 +63,94 @@ export const createManagedUser = async (input: {
 export const updateManagedUser = async (
   userId: string,
   input: Pick<User, "name" | "enable" | "status" | "roles">,
+  tenantId?: string,
 ) => {
-  const response = await apiClient.put<User>(`/users/update/all/${userId}`, input);
+  const response = await apiClient.put<User>(`/users/update/all/${userId}`, input, {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
   return response.data;
 };
 
-export const deleteManagedUser = async (userId: string) => {
-  await apiClient.delete(`/users/delete/${userId}`);
+export const deleteManagedUser = async (userId: string, tenantId?: string) => {
+  await apiClient.delete(`/users/delete/${userId}`, {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
 };
 
-export const getAllRoles = async () => {
-  const response = await apiClient.get<Role[]>("/role/lookup/search/all");
+export const getAllRoles = async (tenantId?: string) => {
+  const response = await apiClient.get<Role[]>("/role/lookup/search/all", {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
   return response.data;
 };
 
 type RoleInput = Pick<Role, "identifier" | "name" | "status" | "permissions">;
 
-export const createRole = async (role: RoleInput) => {
-  const response = await apiClient.post<Role>("/role/register", role);
+export const createRole = async (role: RoleInput, tenantId?: string) => {
+  const response = await apiClient.post<Role>("/role/register", role, {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
   return response.data;
 };
 
 export const updateRole = async (
   roleId: string,
   role: RoleInput,
+  tenantId?: string,
 ) => {
-  const response = await apiClient.put<Role>(`/role/update/${roleId}`, role);
+  const response = await apiClient.put<Role>(`/role/update/${roleId}`, role, {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
   return response.data;
 };
 
-export const deleteRole = async (roleId: string) => {
-  await apiClient.delete(`/role/delete/${roleId}`);
+export const deleteRole = async (roleId: string, tenantId?: string) => {
+  await apiClient.delete(`/role/delete/${roleId}`, {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
+};
+
+export interface Tenant {
+  id: string;
+  tenantCode: string;
+  name: string;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactNumber: string;
+}
+
+export const getAllTenants = async () => {
+  const response = await apiClient.get<Tenant[]>("/tenants/lookup/search/all");
+  return response.data;
+};
+
+export const createTenant = async (input: {
+  tenantCode: string;
+  name: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactNumber: string;
+}) => {
+  const response = await apiClient.post<Tenant>("/tenants/register", input);
+  return response.data;
+};
+
+export const updateTenant = async (
+  tenantCode: string,
+  input: Pick<Tenant, "name" | "status">,
+) => {
+  const response = await apiClient.put<Tenant>(`/tenants/update/${tenantCode}`, input);
+  return response.data;
 };
 
 //refresh token
 
-export const refreshToken = async () => {
-  const response = await apiClient.post<LoginResponseData>(`/auth/refresh`);
+export const refreshToken = async (tenantId?: string) => {
+  const response = await apiClient.post<LoginResponseData>(`/auth/refresh`, null, {
+    headers: tenantId ? { "X-G-APP-Tenant-Id": tenantId } : undefined,
+  });
   return response.data;
 };
 

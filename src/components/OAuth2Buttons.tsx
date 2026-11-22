@@ -2,13 +2,13 @@ import { Button } from "./ui/button";
 import { Chrome, Github } from "lucide-react";
 import { NavLink } from "react-router";
 
-function OAuth2Buttons() {
+function OAuth2Buttons({ tenantId }: { tenantId: string }) {
   return (
     <div className="space-y-3">
       <NavLink
         to={`${
           import.meta.env.VITE_BASE_URL || "http://localhost:8787"
-        }/oauth2/authorization/google`}
+        }/oauth2/authorization/google?tenantId=${encodeURIComponent(tenantId)}`}
         className={"block"}
       >
         <Button
@@ -23,7 +23,7 @@ function OAuth2Buttons() {
       <NavLink
         to={`${
           import.meta.env.VITE_BASE_URL || "http://localhost:8787"
-        }/oauth2/authorization/github`}
+        }/oauth2/authorization/github?tenantId=${encodeURIComponent(tenantId)}`}
         className={"block"}
       >
         <Button

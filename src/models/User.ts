@@ -2,6 +2,7 @@ import type { Permission } from "@/models/Permission";
 
 export default interface User {
   id: string;
+  tenantId: string;
   email: string;
   name?: string;
   enable: boolean;

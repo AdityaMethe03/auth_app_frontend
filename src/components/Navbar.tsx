@@ -8,6 +8,7 @@ function Navbar() {
   const user = useAuth((state) => state.user);
   const canManageUsers = hasPermission(user, "USER:READ");
   const canViewRoles = hasPermission(user, "ROLE:READ");
+  const canViewTenants = hasPermission(user, "TENANT:READ");
   const logout = useAuth((state) => state.logout);
   const navigate = useNavigate();
 
@@ -34,6 +35,7 @@ function Navbar() {
 
             {canManageUsers && <NavLink to="/dashboard/admin/users">Users</NavLink>}
             {canViewRoles && <NavLink to="/dashboard/admin/roles">Roles</NavLink>}
+            {canViewTenants && <NavLink to="/dashboard/admin/tenants">Tenants</NavLink>}
 
             <Button
               onClick={() => {
