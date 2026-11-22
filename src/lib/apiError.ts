@@ -19,6 +19,11 @@ export function getApiErrorCode(error: unknown): string | undefined {
   return error.response?.data?.code;
 }
 
+export function getApiErrorStatus(error: unknown): number | undefined {
+  if (!axios.isAxiosError(error)) return undefined;
+  return error.response?.status;
+}
+
 export function getApiErrorMessage(
   error: unknown,
   fallback = "Something went wrong. Please try again.",

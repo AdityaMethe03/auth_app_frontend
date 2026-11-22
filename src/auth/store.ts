@@ -56,8 +56,6 @@ const useAuth = create<AuthState>()(
             authStatus: true,
           });
           return loginResponseData;
-        } catch (error) {
-          throw error;
         } finally {
           set({
             authLoading: false,
@@ -70,7 +68,7 @@ const useAuth = create<AuthState>()(
             authLoading: true,
           });
           await logoutUser();
-        } catch (error) {
+        } catch {
           // Clear the local session even when the server cannot revoke the cookie.
           console.warn("Server logout failed; local auth state was cleared.");
         } finally {

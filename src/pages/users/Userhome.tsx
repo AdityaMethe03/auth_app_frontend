@@ -8,7 +8,7 @@ import { hasPermission } from "@/auth/permissions";
 import { useState } from "react";
 import type UserT from "@/models/User";
 import toast from "react-hot-toast";
-import { getApiErrorMessage } from "@/lib/apiError";
+import { getApiErrorMessage, getApiErrorStatus } from "@/lib/apiError";
 
 function Userhome() {
   const user = useAuth((state) => state.user);
@@ -22,7 +22,7 @@ function Userhome() {
       setUser1(user1);
       toast.success("you are able to access secured apis")
     } catch (error) {
-      if ([401, 404].includes((error as any)?.response?.status)) return;
+      if ([401, 404].includes(getApiErrorStatus(error) ?? 0)) return;
       toast.error(getApiErrorMessage(error, "Unable to load your account."));
     }
   };

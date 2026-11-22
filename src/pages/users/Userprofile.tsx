@@ -10,7 +10,7 @@ import { updateUserProfile } from "@/services/AuthService";
 import toast from "react-hot-toast";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog.tsx";
 import DeleteAccountDialog from "@/components/DeleteAccountDialog.tsx";
-import { getApiErrorMessage } from "@/lib/apiError";
+import { getApiErrorMessage, getApiErrorStatus } from "@/lib/apiError";
 
 function Userprofile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -44,7 +44,7 @@ function Userprofile() {
       toast.success("Profile updated successfully");
       setIsEditing(false);
     } catch (error) {
-      if ([401, 404].includes((error as any)?.response?.status)) return;
+      if ([401, 404].includes(getApiErrorStatus(error) ?? 0)) return;
       toast.error(getApiErrorMessage(error, "Unable to update your profile."));
     } finally {
       setLoading(false);

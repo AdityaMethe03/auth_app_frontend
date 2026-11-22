@@ -1,81 +1,67 @@
-# React + TypeScript + Vite
+# Authentication Service Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React application for the multi-tenant authentication service. Users can sign in or register within a tenant, manage their profile, and access user, role, permission, or tenant administration pages when their permissions allow it.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 and TypeScript
+- Vite
+- React Router
+- Tailwind CSS and Radix UI components
+- Axios and Zustand
 
-## React Compiler
+## Run locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Install Node.js and npm.
+2. Install dependencies:
 
-## Expanding the ESLint configuration
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3. Create a `.env.local` file in the project root with the backend URLs:
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+   ```dotenv
+   VITE_API_BASE_URL=http://localhost:8091/authapp/api/v1
+   VITE_BASE_URL=http://localhost:8091/authapp
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+   `VITE_API_BASE_URL` is the REST API base URL. `VITE_BASE_URL` is the backend application base used to start OAuth sign-in. Configure the backend CORS and OAuth redirect settings to match the frontend URL (`http://localhost:5173`) when needed.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+4. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+Open `http://localhost:5173` in a browser. The backend must be running and reachable at the configured URLs.
+
+## Available commands
+
+```bash
+npm run dev      # Start Vite development server
+npm run build    # Type-check and create the production bundle in dist/
+npm run preview  # Serve the production bundle locally
+npm run lint     # Run ESLint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Main pages
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+- `/`: application home page
+- `/about` and `/services`: public product information
+- `/login` and `/signup`: tenant-aware authentication and registration
+- `/dashboard`: signed-in user home and profile
+- `/dashboard/admin/users`: user administration, shown when the user has `USER:READ`
+- `/dashboard/admin/roles`: role administration, shown when the user has `ROLE:READ`
+- `/dashboard/admin/tenants`: tenant administration, shown when the user has `TENANT:READ`
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+The frontend uses permissions returned by the backend to control navigation and page access. The backend remains responsible for enforcing authorization on API requests. Tenant context is sent with `X-G-APP-Tenant-Id` where an operation targets a tenant.
 
-TODO:
+## Environment variables
 
-imp:
-oauth signup and login urls
+| Variable | Purpose |
+| --- | --- |
+| `VITE_API_BASE_URL` | Backend REST API base URL, including `/api/v1` |
+| `VITE_BASE_URL` | Backend base URL used for OAuth authorization redirects |
 
-for sudo admin
-create, update, lookup, delete role
+Values prefixed with `VITE_` are included in the browser bundle, so do not put secrets in frontend environment files.
