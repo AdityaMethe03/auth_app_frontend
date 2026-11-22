@@ -2,6 +2,7 @@ import { Button } from "./ui/button";
 import { NavLink, useNavigate } from "react-router";
 import useAuth from "@/auth/store";
 import { hasPermission } from "@/auth/permissions";
+import { House } from "lucide-react";
 
 function Navbar() {
   const checkLogin = useAuth((state) => state.checkLogin);
@@ -51,24 +52,62 @@ function Navbar() {
           </>
         ) : (
           <>
-            <NavLink to={"/"}>Home</NavLink>
-            <NavLink to={"/login"}>
-              <Button
-                size={"sm"}
-                className="cursor-pointer"
-                variant={"outline"}
-              >
-                Login
-              </Button>
+            <NavLink
+              to="/"
+              aria-label="Home"
+              title="Home"
+              className={({ isActive }) =>
+                `inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-foreground ${
+                  isActive ? "bg-accent text-foreground" : "text-muted-foreground"
+                }`
+              }
+            >
+              <House aria-hidden="true" className="h-5 w-5" />
+              <span className="sr-only">Home</span>
             </NavLink>
-            <NavLink to={"/signup"}>
-              <Button
-                size={"sm"}
-                className="cursor-pointer"
-                variant={"outline"}
-              >
-                Signup
-              </Button>
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `text-sm transition-colors hover:text-foreground ${
+                  isActive ? "font-semibold text-foreground" : "text-muted-foreground"
+                }`
+              }
+            >
+              About
+            </NavLink>
+            <NavLink
+              to="/services"
+              className={({ isActive }) =>
+                `text-sm transition-colors hover:text-foreground ${
+                  isActive ? "font-semibold text-foreground" : "text-muted-foreground"
+                }`
+              }
+            >
+              Services
+            </NavLink>
+            <NavLink to="/login">
+              {({ isActive }) => (
+                <Button
+                  size="sm"
+                  className="cursor-pointer"
+                  variant="outline"
+                  style={isActive ? { backgroundColor: "#fff", borderColor: "#fff", color: "#000" } : undefined}
+                >
+                  Login
+                </Button>
+              )}
+            </NavLink>
+            <NavLink to="/signup">
+              {({ isActive }) => (
+                <Button
+                  size="sm"
+                  className="cursor-pointer"
+                  variant="outline"
+                  style={isActive ? { backgroundColor: "#fff", borderColor: "#fff", color: "#000" } : undefined}
+                >
+                  Signup
+                </Button>
+              )}
             </NavLink>
           </>
         )}

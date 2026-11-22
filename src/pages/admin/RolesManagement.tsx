@@ -11,6 +11,7 @@ import type { RoleStatus } from "@/models/Role";
 import type { Permission, PermissionAction, PermissionEntity } from "@/models/Permission";
 import { createRole, deleteRole, getAllRoles, getAllTenants, updateRole, type Tenant } from "@/services/AuthService";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 const ENTITIES: PermissionEntity[] = ["USER", "ROLE"];
 const ACTIONS: PermissionAction[] = ["READ", "WRITE", "UPDATE", "DELETE"];
@@ -53,8 +54,7 @@ function RolesManagement() {
       setRoles(roleRows);
       setTenants(tenantRows);
     } catch (error) {
-      console.error("Unable to load roles", error);
-      toast.error("Unable to load roles.");
+      toast.error(getApiErrorMessage(error, "Unable to load roles."));
     } finally {
       setLoading(false);
     }
@@ -114,8 +114,7 @@ function RolesManagement() {
       }
       setDialogOpen(false);
     } catch (error) {
-      console.error("Unable to save role", error);
-      toast.error("Unable to save role.");
+      toast.error(getApiErrorMessage(error, "Unable to save role."));
     } finally {
       setSaving(false);
     }
@@ -128,8 +127,7 @@ function RolesManagement() {
       setRoles((current) => current.filter((item) => item.id !== role.id || item.tenantId !== role.tenantId));
       toast.success("Role deleted.");
     } catch (error) {
-      console.error("Unable to delete role", error);
-      toast.error("Unable to delete role.");
+      toast.error(getApiErrorMessage(error, "Unable to delete role."));
     }
   }
 

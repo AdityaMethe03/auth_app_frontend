@@ -16,6 +16,7 @@ import { deleteUserAccount } from "@/services/AuthService";
 import { Spinner } from "@/components/ui/spinner";
 import useAuth from "@/auth/store";
 import { useNavigate } from "react-router";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 interface DeleteAccountDialogProps {
   open: boolean;
@@ -60,11 +61,8 @@ export default function DeleteAccountDialog({
       // Redirect to home
       navigate("/");
     } catch (error: any) {
-      console.log(error);
-      if ([401, 403, 404].includes(error?.response?.status)) return;
-      const errorMsg =
-        error?.response?.data?.message || "Failed to delete account";
-      toast.error(errorMsg);
+      if ([401, 404].includes(error?.response?.status)) return;
+      toast.error(getApiErrorMessage(error, "Unable to delete your account."));
     } finally {
       setLoading(false);
     }

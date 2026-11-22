@@ -12,6 +12,7 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import useAuth from "@/auth/store";
 import OAuth2Buttons from "@/components/OAuth2Buttons";
+import { getApiErrorMessage } from "@/lib/apiError";
 function Login() {
   const [loginData, setLoginData] = useState<LoginData>({
     tenantId: "",
@@ -67,13 +68,8 @@ function Login() {
 
       //save the current user logged in informations
       //localstorage
-    } catch (error: any) {
-      console.error("Login request failed", error);
-      const status = error?.response?.status;
-      const message =
-        status === 400 || status === 401
-          ? "Authentication failed!"
-          : "Unable to sign in. Please try again.";
+    } catch (error) {
+      const message = getApiErrorMessage(error, "Unable to sign in. Please try again.");
       setError(message);
       toast.error(message);
     } finally {

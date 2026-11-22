@@ -4,6 +4,7 @@ import { refreshToken } from "@/services/AuthService";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 function OAuthSuccess() {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -29,8 +30,7 @@ function OAuthSuccess() {
           toast.success("Login success !");
           navigate("/dashboard");
         } catch (error) {
-          toast.error("Error while login!");
-          console.error("Unable to finish tenant OAuth login", error);
+          toast.error(getApiErrorMessage(error, "Unable to complete sign in."));
         } finally {
           setIsRefreshing(false);
         }

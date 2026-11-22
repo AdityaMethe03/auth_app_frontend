@@ -10,6 +10,7 @@ import type RegisterData from "@/models/RegisterData";
 import { registerUser } from "@/services/AuthService";
 import { useNavigate } from "react-router";
 import OAuth2Buttons from "@/components/OAuth2Buttons";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 function Signup() {
   const [data, setData] = useState<RegisterData>({
@@ -75,8 +76,7 @@ function Signup() {
       //navigate : login
       navigate("/login");
     } catch (error) {
-      console.log(error);
-      toast.error("Error in registering the user...");
+      toast.error(getApiErrorMessage(error, "Unable to create your account."));
     }
   };
 

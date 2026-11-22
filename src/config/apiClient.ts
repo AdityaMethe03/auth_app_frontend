@@ -74,7 +74,6 @@ apiClient.interceptors.response.use(
     }
 
     if (status === 403) {
-      toast.error("This action could not be completed.");
       return Promise.reject(error);
     }
 
@@ -84,11 +83,6 @@ apiClient.interceptors.response.use(
     }
 
     if (!is401 || !original) {
-      if (error.response?.data) {
-        toast.error(error.response.data?.message || "An error occurred");
-      }
-      console.error("API Error:", error.response?.data);
-      console.error("Full error:", error);
       return Promise.reject(error);
     }
 
@@ -100,7 +94,6 @@ apiClient.interceptors.response.use(
     original._retry = true;
     //we will try to refresh the token:
     if (isRefreshing) {
-      console.log("added to queue");
       return new Promise((resolve, reject) => {
         queueRequest((newToken: string) => {
           if (!newToken) return reject();
@@ -114,7 +107,6 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      console.log("start refreshing...");
       const loginResponse = await refreshToken();
       const newToken = loginResponse.accessToken;
       if (!newToken) throw new Error("no access token received");

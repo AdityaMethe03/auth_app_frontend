@@ -46,11 +46,9 @@ const useAuth = create<AuthState>()(
         });
       },
       login: async (loginData) => {
-        console.log("started login...");
         set({ authLoading: true });
         try {
           const loginResponseData = await loginUser(loginData);
-          console.log(loginResponseData);
           set({
             accessToken: loginResponseData.accessToken,
             tenantId: loginResponseData.user.tenantId,
@@ -59,7 +57,6 @@ const useAuth = create<AuthState>()(
           });
           return loginResponseData;
         } catch (error) {
-          console.log(error);
           throw error;
         } finally {
           set({
@@ -75,7 +72,7 @@ const useAuth = create<AuthState>()(
           await logoutUser();
         } catch (error) {
           // Clear the local session even when the server cannot revoke the cookie.
-          console.error("Server logout failed; clearing local auth state", error);
+          console.warn("Server logout failed; local auth state was cleared.");
         } finally {
           set({
             accessToken: null,

@@ -7,6 +7,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { updateUserPassword } from "@/services/AuthService";
 import { Spinner } from "@/components/ui/spinner";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 interface ChangePasswordDialogProps {
     open: boolean;
@@ -60,10 +61,8 @@ export default function ChangePasswordDialog({ open, onOpenChange, userId,}: Cha
             setConfirmPassword("");
             onOpenChange(false);
         } catch (error: any) {
-            console.log(error);
-            if ([401, 403, 404].includes(error?.response?.status)) return;
-            const errorMsg = error?.response?.data?.message || "Failed to update password";
-            toast.error(errorMsg);
+            if ([401, 404].includes(error?.response?.status)) return;
+            toast.error(getApiErrorMessage(error, "Unable to update your password."));
         } finally {
             setLoading(false);
         }

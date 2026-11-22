@@ -18,6 +18,7 @@ import {
   type Tenant,
 } from "@/services/AuthService";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 function UsersManagement() {
   const currentUser = useAuth((state) => state.user);
@@ -88,8 +89,7 @@ function UsersManagement() {
       setRoles(roleRows);
       setTenants(tenantRows);
     } catch (error) {
-      console.error("Unable to load user administration data", error);
-      toast.error("Unable to load users.");
+      toast.error(getApiErrorMessage(error, "Unable to load users."));
     } finally {
       setLoading(false);
     }
@@ -138,8 +138,7 @@ function UsersManagement() {
       setCreateOpen(false);
       await loadData();
     } catch (error) {
-      console.error("Unable to create user", error);
-      toast.error("Unable to create user.");
+      toast.error(getApiErrorMessage(error, "Unable to create user."));
     } finally {
       setSaving(false);
     }
@@ -184,8 +183,7 @@ function UsersManagement() {
       toast.success("User updated.");
       setEditingUser(null);
     } catch (error) {
-      console.error("Unable to update user", error);
-      toast.error("Unable to update user.");
+      toast.error(getApiErrorMessage(error, "Unable to update user."));
     } finally {
       setSaving(false);
     }
@@ -198,8 +196,7 @@ function UsersManagement() {
       setUsers((rows) => rows.filter((row) => row.id !== user.id || row.tenantId !== user.tenantId));
       toast.success("User deleted.");
     } catch (error) {
-      console.error("Unable to delete user", error);
-      toast.error("Unable to delete user.");
+      toast.error(getApiErrorMessage(error, "Unable to delete user."));
     }
   }
 

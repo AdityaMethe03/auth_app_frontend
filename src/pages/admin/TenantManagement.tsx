@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createTenant, getAllTenants, updateTenant, type Tenant } from "@/services/AuthService";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 export default function TenantManagement() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -23,8 +24,7 @@ export default function TenantManagement() {
     try {
       setTenants(await getAllTenants());
     } catch (error) {
-      console.error("Unable to load tenants", error);
-      toast.error("Unable to load tenants.");
+      toast.error(getApiErrorMessage(error, "Unable to load tenants."));
     } finally {
       setLoading(false);
     }
@@ -54,8 +54,7 @@ export default function TenantManagement() {
       setContactNumber("");
       toast.success("Tenant created. Add its SYS_ADMIN from user management.");
     } catch (error) {
-      console.error("Unable to create tenant", error);
-      toast.error("Unable to create tenant.");
+      toast.error(getApiErrorMessage(error, "Unable to create tenant."));
     } finally {
       setSaving(false);
     }
@@ -70,8 +69,7 @@ export default function TenantManagement() {
       setTenants((current) => current.map((item) => item.tenantCode === tenant.tenantCode ? updated : item));
       toast.success(`Tenant ${updated.status.toLowerCase()}.`);
     } catch (error) {
-      console.error("Unable to update tenant", error);
-      toast.error("Unable to update tenant.");
+      toast.error(getApiErrorMessage(error, "Unable to update tenant."));
     }
   }
 

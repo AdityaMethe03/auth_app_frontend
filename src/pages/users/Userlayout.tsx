@@ -21,8 +21,7 @@ function Userlayout() {
           changeLocalLoginData(response.accessToken, response.user, true);
         }
       })
-      .catch((error) => {
-        console.error("Unable to refresh the current user session", error);
+      .catch(() => {
         toast.error("Your session has ended. Please sign in again.");
         void useAuth.getState().logout();
       });
